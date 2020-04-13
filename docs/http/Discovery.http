@@ -1,0 +1,4 @@
+GET {{url}}/discover
+Accept: application/json
+
+###

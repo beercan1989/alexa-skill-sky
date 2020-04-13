@@ -39,6 +39,9 @@ dependencies {
     implementation("io.ktor:ktor-client-json:$ktorVersion")
     implementation("io.ktor:ktor-client-serialization:$ktorVersion")
 
+    // IP Address Helper
+    implementation("com.github.maltalex:ineter:0.2.0")
+
     // Test framework
     testImplementation("io.kotest:kotest-runner-junit5-jvm:4.0.2")
     testImplementation("io.kotest:kotest-assertions-core-jvm:4.0.2")

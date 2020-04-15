@@ -1,3 +1,4 @@
+### GET device discovery
 GET {{url}}/discover
 Accept: application/json
 

@@ -20,6 +20,9 @@ dependencies {
     // Use the Kotlin JDK 8 standard library
     implementation(kotlin("stdlib-jdk8"))
 
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.5")
+
     // Logging
     implementation("ch.qos.logback:logback-classic:1.2.3")
 

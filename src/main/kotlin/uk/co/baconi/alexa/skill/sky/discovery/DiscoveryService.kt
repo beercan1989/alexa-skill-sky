@@ -3,10 +3,10 @@ package uk.co.baconi.alexa.skill.sky.discovery
 import com.github.maltalex.ineter.base.IPv4Address
 import com.github.maltalex.ineter.range.IPv4Range
 import com.typesafe.config.Config
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
+import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import java.util.concurrent.Executors
 
@@ -23,15 +23,22 @@ class DiscoveryService(private val iPv4Range: IPv4Range, private val portScanner
         private val logger = LoggerFactory.getLogger(DiscoveryService::class.java)
     }
 
-    fun discoverDevicesAsync(): Deferred<List<Device>> = GlobalScope.async {
-        iPv4Range
-            .map { iPv4Address ->
-                async(coroutineDispatcher) {
-                    scanAddress(iPv4Address)
+    suspend fun discoverDevices(): List<NamedDevice> = withContext(Dispatchers.IO) {
+        iPv4Range.map { iPv4Address ->
+            async(coroutineDispatcher) {
+                when(val device = scanAddress(iPv4Address)) {
+                    is SkyQ -> lookUpDeviceName(device)
+                    else -> null
                 }
-            }.mapNotNull { deferred ->
-                deferred.await()
             }
+        }.mapNotNull { deferred ->
+            deferred.await()
+        }
+    }
+
+    fun lookUpDeviceName(skyQ: SkyQ): NamedDevice {
+        // TODO - GET http://{{ip}}:{{restPort}}/as/system/information
+        return NamedDevice(NamedDeviceType.SkyQ, "TODO", skyQ.ip, skyQ.remotePort, skyQ.restPort)
     }
 
     fun scanAddress(iPv4Address: IPv4Address): Device? {

@@ -19,6 +19,20 @@ object IPv4AddressSerializer : KSerializer<IPv4Address> {
     }
 }
 
+enum class NamedDeviceType {
+    SkyQ,
+    SkyMini
+}
+
+@Serializable
+data class NamedDevice(
+    val type: NamedDeviceType,
+    val name: String,
+    val ip: IPv4Address,
+    val remotePort: Int,
+    val restPort: Int
+)
+
 @Serializable
 sealed class Device(val remotePort: Int, val restPort: Int = 9006) {
     abstract val ip: IPv4Address

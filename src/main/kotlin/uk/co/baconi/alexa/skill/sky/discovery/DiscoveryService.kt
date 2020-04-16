@@ -23,22 +23,14 @@ class DiscoveryService(private val iPv4Range: IPv4Range, private val portScanner
         private val logger = LoggerFactory.getLogger(DiscoveryService::class.java)
     }
 
-    suspend fun discoverDevices(): List<NamedDevice> = withContext(Dispatchers.IO) {
+    suspend fun discoverDevices(): List<Device> = withContext(Dispatchers.IO) {
         iPv4Range.map { iPv4Address ->
             async(coroutineDispatcher) {
-                when(val device = scanAddress(iPv4Address)) {
-                    is SkyQ -> lookUpDeviceName(device)
-                    else -> null
-                }
+                scanAddress(iPv4Address)
             }
         }.mapNotNull { deferred ->
             deferred.await()
         }
-    }
-
-    fun lookUpDeviceName(skyQ: SkyQ): NamedDevice {
-        // TODO - GET http://{{ip}}:{{restPort}}/as/system/information
-        return NamedDevice(NamedDeviceType.SkyQ, "TODO", skyQ.ip, skyQ.remotePort, skyQ.restPort)
     }
 
     fun scanAddress(iPv4Address: IPv4Address): Device? {
@@ -50,12 +42,12 @@ class DiscoveryService(private val iPv4Range: IPv4Range, private val portScanner
                     // hasRemotePortOpen
                     portScanner.isPortOpen(iPv4Address, 49160) -> {
                         logger.debug("Found a possible SkyQ box at {}", iPv4Address)
-                        SkyQ(iPv4Address)
+                        Device(iPv4Address, remotePort = 49160, restPort = 9006)
                     }
                     // hasLegacyRemotePortOpen
                     portScanner.isPortOpen(iPv4Address, 5900) -> {
                         logger.debug("Found a possible SkyHD box at {}", iPv4Address)
-                        SkyHd(iPv4Address)
+                        Device(iPv4Address, remotePort = 5900, restPort = 9006)
                     }
                     else -> {
                         logger.debug("Found a device with just a rest interface at {}", iPv4Address)

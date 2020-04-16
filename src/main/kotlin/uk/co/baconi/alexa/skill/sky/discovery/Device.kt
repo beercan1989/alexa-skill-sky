@@ -3,43 +3,8 @@
 package uk.co.baconi.alexa.skill.sky.discovery
 
 import com.github.maltalex.ineter.base.IPv4Address
-import kotlinx.serialization.*
-
-@Serializer(forClass = IPv4Address::class)
-object IPv4AddressSerializer : KSerializer<IPv4Address> {
-
-    override val descriptor: SerialDescriptor = PrimitiveDescriptor("IPv4Address", PrimitiveKind.STRING)
-
-    override fun serialize(encoder: Encoder, value: IPv4Address) {
-        encoder.encodeString(value.toString())
-    }
-
-    override fun deserialize(decoder: Decoder): IPv4Address {
-        return IPv4Address.of(decoder.decodeString())
-    }
-}
-
-enum class NamedDeviceType {
-    SkyQ,
-    SkyMini
-}
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
 
 @Serializable
-data class NamedDevice(
-    val type: NamedDeviceType,
-    val name: String,
-    val ip: IPv4Address,
-    val remotePort: Int,
-    val restPort: Int
-)
-
-@Serializable
-sealed class Device(val remotePort: Int, val restPort: Int = 9006) {
-    abstract val ip: IPv4Address
-}
-
-@Serializable
-data class SkyHd(override val ip: IPv4Address) : Device(5900)
-
-@Serializable
-data class SkyQ(override val ip: IPv4Address) : Device(49160)
+data class Device(val ip: IPv4Address, val remotePort: Int, val restPort: Int)

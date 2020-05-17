@@ -1,5 +1,10 @@
 package uk.co.baconi.alexa.skill.sky.discovery
 
+import arrow.fx.IO
+import arrow.fx.IO.Companion.effect
+import arrow.fx.extensions.fx
+import arrow.fx.extensions.io.concurrent.parTraverse
+import arrow.fx.extensions.io.monad.map
 import com.github.maltalex.ineter.base.IPv4Address
 import com.github.maltalex.ineter.range.IPv4Range
 import com.typesafe.config.Config
@@ -9,6 +14,15 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import java.util.concurrent.Executors
+
+suspend fun threadName(): String =
+    Thread.currentThread().name
+
+data class ThreadInfo(
+    val threadA: String,
+    val threadB: String,
+    val threadC: String
+)
 
 class DiscoveryService(private val iPv4Range: IPv4Range, private val portScanner: PortScanner) {
 
@@ -23,17 +37,16 @@ class DiscoveryService(private val iPv4Range: IPv4Range, private val portScanner
         private val logger = LoggerFactory.getLogger(DiscoveryService::class.java)
     }
 
-    suspend fun discoverDevices(): List<Device> = withContext(Dispatchers.IO) {
-        iPv4Range.map { iPv4Address ->
-            async(coroutineDispatcher) {
-                scanAddress(iPv4Address)
-            }
-        }.mapNotNull { deferred ->
-            deferred.await()
+    fun discoverDevices(): IO<List<Device>> {
+        val devices = iPv4Range.parTraverse(coroutineDispatcher) { iPv4Address ->
+            effect { scanAddress(iPv4Address) }
+        }
+        return devices.map { list ->
+            list.filterNotNull()
         }
     }
 
-    fun scanAddress(iPv4Address: IPv4Address): Device? {
+    private fun scanAddress(iPv4Address: IPv4Address): Device? {
         logger.trace("Scanning {}", iPv4Address)
         return when {
             // hasRestInterfacePortOpen

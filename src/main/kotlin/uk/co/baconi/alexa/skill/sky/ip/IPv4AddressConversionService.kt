@@ -5,6 +5,9 @@ import io.ktor.util.ConversionService
 import io.ktor.util.DataConversionException
 import java.lang.reflect.Type
 
+/**
+ * Enables the use of IPv4Address with Ktor's typed Location feature.
+ */
 object IPv4AddressConversionService : ConversionService {
 
     override fun fromValues(values: List<String>, type: Type): Any? {

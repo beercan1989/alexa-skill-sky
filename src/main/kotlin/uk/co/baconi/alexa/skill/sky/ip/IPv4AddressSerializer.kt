@@ -1,4 +1,4 @@
-package uk.co.baconi.alexa.skill.sky.discovery
+package uk.co.baconi.alexa.skill.sky.ip
 
 import com.github.maltalex.ineter.base.IPv4Address
 import kotlinx.serialization.*

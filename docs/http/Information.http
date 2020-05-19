@@ -1,0 +1,6 @@
+### GET device discovery
+GET {{url}}/information/192.168.0.15/9006
+
+Accept: application/json
+
+###
